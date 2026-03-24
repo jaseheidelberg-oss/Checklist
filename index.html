@@ -9,20 +9,39 @@
       font-family: monospace;
       padding: 20px;
     }
-    input {
+
+    #output {
+      white-space: pre-wrap;
+      min-height: 300px;
+    }
+
+    #input-line {
+      display: flex;
+      align-items: center;
+    }
+
+    #prompt {
+      margin-right: 5px;
+    }
+
+    #input {
       background: black;
       color: #00ff00;
       border: none;
       outline: none;
       font-family: monospace;
-      width: 100%;
+      flex: 1;
     }
   </style>
 </head>
 <body>
 
 <div id="output"></div>
-<input id="input" autofocus placeholder="Type command...">
+
+<div id="input-line">
+  <span id="prompt">></span>
+  <input id="input" autofocus>
+</div>
 
 <script>
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [
@@ -37,12 +56,32 @@ function save() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+// Typing animation
+function typeText(text, i = 0) {
+  if (i < text.length) {
+    output.textContent += text[i];
+    setTimeout(() => typeText(text, i + 1), 5);
+  }
+}
+
 function render() {
-  output.innerHTML = "📋 Checklist\n\n";
+  output.textContent = "";
+
+  let text = "📋 Checklist\n\n";
+
   tasks.forEach((t,i)=>{
-    output.innerHTML += `${i+1}) [${t.done ? "x":" "}] ${t.text}\n`;
+    text += `${i+1}) [${t.done ? "x":" "}] ${t.text}\n`;
   });
-  output.innerHTML += "\nCommands: number=toggle, a=add, d=delete, q=clear\n";
+
+  text += "\n----------------------------\n";
+  text += "Commands:\n";
+  text += "number = toggle task\n";
+  text += "a = add\n";
+  text += "e = edit\n";
+  text += "d = delete\n";
+  text += "c = clear\n";
+
+  typeText(text);
 }
 
 input.addEventListener("keydown", function(e){
@@ -56,9 +95,21 @@ input.addEventListener("keydown", function(e){
         tasks.push({text, done:false});
       }
     }
+    else if(val === "e"){
+      let num = prompt("Edit which number?");
+      let text = prompt("New text:");
+      if(tasks[num-1] && text){
+        tasks[num-1].text = text;
+      }
+    }
     else if(val === "d"){
       let num = prompt("Delete which number?");
       tasks.splice(num-1,1);
+    }
+    else if(val === "c"){
+      if(confirm("Clear all tasks?")){
+        tasks = [];
+      }
     }
     else if(!isNaN(val)){
       let i = val-1;
