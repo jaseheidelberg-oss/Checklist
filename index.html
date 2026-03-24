@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checklist</title>
+</head>
+<body>
+  <h1>📋 Checklist</h1>
+
+  <input id="newTask" placeholder="New task">
+  <button onclick="addTask()">Add</button>
+
+  <ul id="list"></ul>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    function save() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function render() {
+      let list = document.getElementById("list");
+      list.innerHTML = "";
+      tasks.forEach((task, i) => {
+        let li = document.createElement("li");
+
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.onclick = () => {
+          tasks[i].done = !tasks[i].done;
+          save();
+          render();
+        };
+
+        let text = document.createElement("span");
+        text.textContent = task.text;
+
+        li.appendChild(checkbox);
+        li.appendChild(text);
+        list.appendChild(li);
+      });
+    }
+
+    function addTask() {
+      let input = document.getElementById("newTask");
+      tasks.push({ text: input.value, done: false });
+      input.value = "";
+      save();
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
