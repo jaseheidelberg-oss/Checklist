@@ -1,56 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Checklist</title>
+  <title>Terminal Checklist</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: monospace;
+      padding: 20px;
+    }
+    input {
+      background: black;
+      color: #00ff00;
+      border: none;
+      outline: none;
+      font-family: monospace;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-  <h1>📋 Checklist</h1>
 
-  <input id="newTask" placeholder="New task">
-  <button onclick="addTask()">Add</button>
+<div id="output"></div>
+<input id="input" autofocus placeholder="Type command...">
 
-  <ul id="list"></ul>
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [
+  {text:"Task 1", done:false},
+  {text:"Task 2", done:false}
+];
 
-  <script>
-    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+const output = document.getElementById("output");
+const input = document.getElementById("input");
 
-    function save() {
-      localStorage.setItem("tasks", JSON.stringify(tasks));
+function save() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function render() {
+  output.innerHTML = "📋 Checklist\n\n";
+  tasks.forEach((t,i)=>{
+    output.innerHTML += `${i+1}) [${t.done ? "x":" "}] ${t.text}\n`;
+  });
+  output.innerHTML += "\nCommands: number=toggle, a=add, d=delete, q=clear\n";
+}
+
+input.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    let val = input.value.trim();
+    input.value = "";
+
+    if(val === "a"){
+      let text = prompt("New task:");
+      if(text){
+        tasks.push({text, done:false});
+      }
+    }
+    else if(val === "d"){
+      let num = prompt("Delete which number?");
+      tasks.splice(num-1,1);
+    }
+    else if(!isNaN(val)){
+      let i = val-1;
+      if(tasks[i]){
+        tasks[i].done = !tasks[i].done;
+      }
     }
 
-    function render() {
-      let list = document.getElementById("list");
-      list.innerHTML = "";
-      tasks.forEach((task, i) => {
-        let li = document.createElement("li");
-
-        let checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = task.done;
-        checkbox.onclick = () => {
-          tasks[i].done = !tasks[i].done;
-          save();
-          render();
-        };
-
-        let text = document.createElement("span");
-        text.textContent = task.text;
-
-        li.appendChild(checkbox);
-        li.appendChild(text);
-        list.appendChild(li);
-      });
-    }
-
-    function addTask() {
-      let input = document.getElementById("newTask");
-      tasks.push({ text: input.value, done: false });
-      input.value = "";
-      save();
-      render();
-    }
-
+    save();
     render();
-  </script>
+  }
+});
+
+render();
+</script>
+
 </body>
 </html>
